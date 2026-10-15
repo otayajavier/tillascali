@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catálogo de calzado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <h1>Calzado</h1>
+  <nav id="filtros" aria-label="Filtrar por género">
+    <button data-g="todos" class="on">Todos</button>
+    <button data-g="dama">Dama</button>
+    <button data-g="caballero">Caballero</button>
+    <button data-g="niña">Niña</button>
+    <button data-g="niño">Niño</button>
+  </nav>
+</header>
+
+<main>
+  <p id="estado" class="estado">Cargando inventario…</p>
+  <section id="grid" class="grid"></section>
+</main>
+
+<div id="overlay" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="o-nombre">
+  <div class="panel">
+    <button class="cerrar" id="cerrar" aria-label="Cerrar">✕</button>
+    <div class="foto"><img id="o-img" alt=""></div>
+    <div class="info">
+      <h2 id="o-nombre"></h2>
+      <p id="o-precio" class="precio"></p>
+
+      <label class="campo">Medir por
+        <select id="sistema">
+          <option value="CO">Colombia (CO)</option>
+          <option value="EU">Europa (EU)</option>
+          <option value="USA">Estados Unidos (USA)</option>
+          <option value="CM">Centímetros (CM)</option>
+        </select>
+      </label>
+
+      <p class="lbl">Elige tu talla</p>
+      <div id="tallas" class="tallas"></div>
+
+      <div id="equiv" class="equiv" hidden>
+        <div><span>CO</span><b id="e-CO"></b></div>
+        <div><span>EU</span><b id="e-EU"></b></div>
+        <div><span>USA</span><b id="e-USA"></b></div>
+        <div><span>CM</span><b id="e-CM"></b></div>
+      </div>
+
+      <a id="pedir" class="pedir" target="_blank" rel="noopener" aria-disabled="true">Elige una talla para pedir</a>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
