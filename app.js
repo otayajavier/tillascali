@@ -92,6 +92,11 @@ async function cargar(){
       disp:norm(r[ix("disponible")])
     })).filter(p=>p.nombre && ["si","sí"].includes(p.disp));
     productos.forEach(p=>p.img=p.imgs[0]||"");
+    // Orden aleatorio en cada carga (Fisher-Yates); los filtros conservan ese orden
+    for(let i=productos.length-1;i>0;i--){
+      const k=Math.floor(Math.random()*(i+1));
+      [productos[i],productos[k]]=[productos[k],productos[i]];
+    }
     $("estado").hidden = true;
     pintar();
   }catch(e){
