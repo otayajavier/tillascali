@@ -30,10 +30,10 @@
   <div class="panel">
     <button class="cerrar" id="cerrar" aria-label="Cerrar y volver al catálogo">✕</button>
     <div class="foto">
-      <div id="visor" class="visor" title="Toca para ampliar"><img id="o-img" alt=""></div>
+      <div id="visor" class="visor" title="Toca para ver completa"><img id="o-img" alt=""></div>
       <button class="nav prev" id="prev" aria-label="Foto anterior">‹</button>
       <button class="nav next" id="next" aria-label="Foto siguiente">›</button>
-      <p class="hint" id="hint">Toca la foto para ampliar</p>
+      <p class="hint" id="hint">Toca la foto para verla completa</p>
       <div id="thumbs" class="thumbs"></div>
     </div>
     <div class="info">
@@ -62,6 +62,14 @@
       <a id="pedir" class="pedir" target="_blank" rel="noopener" aria-disabled="true">Elige una talla para pedir</a>
     </div>
   </div>
+</div>
+
+<div id="lb" class="lb" hidden role="dialog" aria-modal="true" aria-label="Foto ampliada">
+  <button class="cerrar" id="lb-x" aria-label="Cerrar foto">✕</button>
+  <button class="nav prev" id="lb-prev" aria-label="Foto anterior">‹</button>
+  <button class="nav next" id="lb-next" aria-label="Foto siguiente">›</button>
+  <div class="lb-scroll" id="lb-scroll"><img id="lb-img" alt=""></div>
+  <p class="lb-hint" id="lb-hint">Toca la foto para acercar</p>
 </div>
 
 <script src="app.js"></script>
