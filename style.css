@@ -62,3 +62,6 @@ select{font:inherit;padding:10px;border:1.5px solid var(--line);border-radius:6p
 .lb .nav{top:50%;z-index:45}
 @media(min-width:721px){.lb.z .lb-scroll img{width:160vw}}
 @media(max-width:720px){.visor img{max-height:50vh;max-height:50dvh}}
+
+.copiar{margin-top:auto;font:inherit;font-weight:600;padding:12px;border:1.5px solid var(--ink);border-radius:6px;background:none;color:var(--ink);cursor:pointer}
+.copiar+.pedir{margin-top:0}
