@@ -99,12 +99,22 @@ async function cargar(){
     }
     $("estado").hidden = true;
     pintar();
+    abrirDesdeHash();
   }catch(e){
     $("estado").textContent="No pudimos cargar el inventario. Intenta de nuevo en unos minutos.";
     console.error(e);
   }
 }
 
+function abrirDesdeHash(){
+  const m=location.hash.match(/^#p=(.+)$/); if(!m) return;
+  const id=decodeURIComponent(m[1]), p=productos.find(x=>String(x.id)===id);
+  if(p) abrir(p,true);
+  else{
+    history.replaceState(null,"",location.pathname+location.search);
+    $("estado").hidden=false; $("estado").textContent="Ese zapato ya no está disponible. Mira el resto del catálogo 👇";
+  }
+}
 function pintar(){
   const lista = productos.filter(p=>filtro=="todos"||p.genero==filtro);
   const g=$("grid"); g.innerHTML="";
@@ -131,7 +141,8 @@ $("filtros").onclick=e=>{
 /* ====== OVERLAY ====== */
 let actual=null, tallaSel=null, ultimoFoco=null, fotoIdx=0, abierto=false;
 
-function abrir(p){
+function enlace(p){ return location.origin+location.pathname+location.search+(p.id?"#p="+encodeURIComponent(p.id):""); }
+function abrir(p, desdeURL){
   actual=p; tallaSel=null; ultimoFoco=document.activeElement;
   $("o-img").referrerPolicy="no-referrer"; fotoIdx=0; pintarFoto();
   $("o-nombre").textContent=p.nombre;
@@ -141,7 +152,11 @@ function abrir(p){
   actualizarPedir();
   $("overlay").hidden=false; abierto=true;
   document.body.style.overflow="hidden";
-  history.pushState({o:1},"");          // el botón "atrás" del celular también cierra el overlay
+  // URL propia por producto (#p=ID); el botón "atrás" del celular también cierra el overlay
+  const h=p.id?"#p="+encodeURIComponent(p.id):location.hash;
+  if(desdeURL) history.replaceState({o:1,base:1},"",location.pathname+location.search+h);
+  else history.pushState({o:1},"",location.pathname+location.search+h);
+  $("copiar").textContent="🔗 Copiar enlace de este zapato";
   $("cerrar").focus();
 }
 function ocultar(){
@@ -149,7 +164,19 @@ function ocultar(){
   abierto=false; lbAbierto=false; $("lb").hidden=true; $("overlay").hidden=true; document.body.style.overflow="";
   ultimoFoco&&ultimoFoco.focus();
 }
-function cerrar(){ if(history.state&&history.state.o) history.back(); else ocultar(); }
+function cerrar(){
+  const s=history.state;
+  if(s&&s.base){ history.replaceState(null,"",location.pathname+location.search); ocultar(); }
+  else if(s&&s.o) history.back();
+  else ocultar();
+}
+// Copiar enlace directo al producto
+$("copiar").onclick=async()=>{
+  const url=enlace(actual), b=$("copiar");
+  try{ await navigator.clipboard.writeText(url); }
+  catch(_){ const t=document.createElement("textarea"); t.value=url; document.body.appendChild(t); t.select(); try{document.execCommand("copy")}catch(e){prompt("Copia este enlace:",url)} t.remove(); }
+  b.textContent="✓ ¡Enlace copiado!"; setTimeout(()=>b.textContent="🔗 Copiar enlace de este zapato",2000);
+};
 window.addEventListener("popstate",()=>{ if(lbAbierto) ocultarLb(); else ocultar(); });
 
 /* ---- Galería y zoom ---- */
@@ -207,7 +234,7 @@ function actualizarPedir(){
   const a=$("pedir");
   if(tallaSel===null){ a.setAttribute("aria-disabled","true"); a.textContent="Elige una talla para pedir"; a.removeAttribute("href"); return; }
   const f=(TABLAS[actual.genero]||T_NINOS)[tallaSel];
-  const msg=`Hola, quiero pedir: ${actual.nombre} (ref. ${actual.id}), talla CO ${f.CO} / EU ${f.EU} / USA ${f.USA} / ${f.CM} cm.`;
+  const msg=`Hola, quiero pedir: ${actual.nombre} (ref. ${actual.id}), talla CO ${f.CO} / EU ${f.EU} / USA ${f.USA} / ${f.CM} cm.\n${enlace(actual)}`;
   a.href=`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
   a.setAttribute("aria-disabled","false"); a.textContent="Pedir por WhatsApp";
 }
