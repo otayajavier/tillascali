@@ -61,3 +61,4 @@ select{font:inherit;padding:10px;border:1.5px solid var(--line);border-radius:6p
 .lb-hint{text-align:center;color:#c9ccd3;font-size:.8rem;padding:10px;height:40px}
 .lb .nav{top:50%;z-index:45}
 @media(min-width:721px){.lb.z .lb-scroll img{width:160vw}}
+@media(max-width:720px){.visor img{max-height:50vh;max-height:50dvh}}
