@@ -28,8 +28,14 @@
 
 <div id="overlay" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="o-nombre">
   <div class="panel">
-    <button class="cerrar" id="cerrar" aria-label="Cerrar">✕</button>
-    <div class="foto"><img id="o-img" alt=""></div>
+    <button class="cerrar" id="cerrar" aria-label="Cerrar y volver al catálogo">✕</button>
+    <div class="foto">
+      <div id="visor" class="visor" title="Toca para ampliar"><img id="o-img" alt=""></div>
+      <button class="nav prev" id="prev" aria-label="Foto anterior">‹</button>
+      <button class="nav next" id="next" aria-label="Foto siguiente">›</button>
+      <p class="hint" id="hint">Toca la foto para ampliar</p>
+      <div id="thumbs" class="thumbs"></div>
+    </div>
     <div class="info">
       <h2 id="o-nombre"></h2>
       <p id="o-precio" class="precio"></p>
