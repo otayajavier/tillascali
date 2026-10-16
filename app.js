@@ -141,16 +141,16 @@ function abrir(p){
 }
 function ocultar(){
   if(!abierto) return;
-  abierto=false; $("overlay").hidden=true; document.body.style.overflow="";
+  abierto=false; lbAbierto=false; $("lb").hidden=true; $("overlay").hidden=true; document.body.style.overflow="";
   ultimoFoco&&ultimoFoco.focus();
 }
 function cerrar(){ if(history.state&&history.state.o) history.back(); else ocultar(); }
-window.addEventListener("popstate",ocultar);
+window.addEventListener("popstate",()=>{ if(lbAbierto) ocultarLb(); else ocultar(); });
 
 /* ---- Galería y zoom ---- */
 function pintarFoto(){
   const imgs=actual.imgs, multi=imgs.length>1;
-  $("visor").classList.remove("z"); $("hint").textContent="Toca la foto para ampliar"; $("o-img").style.transformOrigin="50% 50%";
+  
   $("o-img").src=imgs[fotoIdx]||""; $("o-img").alt=actual.nombre+(multi?` (foto ${fotoIdx+1} de ${imgs.length})`:"");
   $("prev").hidden=$("next").hidden=!multi;
   const t=$("thumbs"); t.hidden=!multi; t.innerHTML="";
@@ -161,18 +161,27 @@ function pintarFoto(){
     b.onclick=()=>{fotoIdx=i;pintarFoto()}; t.appendChild(b);
   });
 }
-function mover(d){ const n=actual.imgs.length; fotoIdx=(fotoIdx+d+n)%n; pintarFoto(); }
+function mover(d){ const n=actual.imgs.length; fotoIdx=(fotoIdx+d+n)%n; pintarFoto(); if(lbAbierto) pintarLb(); }
 $("prev").onclick=()=>mover(-1); $("next").onclick=()=>mover(1);
-$("visor").onclick=e=>{
-  const v=$("visor"), z=!v.classList.contains("z");
-  v.classList.toggle("z",z); $("hint").textContent=z?"Mueve el dedo o el mouse para recorrer la foto":"Toca la foto para ampliar";
-  if(z) origen(e);
-};
-function origen(e){
-  const r=$("visor").getBoundingClientRect();
-  $("o-img").style.transformOrigin=((e.clientX-r.left)/r.width*100)+"% "+((e.clientY-r.top)/r.height*100)+"%";
+/* ---- Foto ampliada (pantalla completa, foto entera) ---- */
+let lbAbierto=false;
+function abrirLb(){
+  lbAbierto=true; $("lb").classList.remove("z"); $("lb-hint").textContent="Toca la foto para acercar";
+  $("lb-img").referrerPolicy="no-referrer"; pintarLb(); $("lb").hidden=false;
+  $("lb-prev").hidden=$("lb-next").hidden=actual.imgs.length<2;
+  history.pushState({o:1,lb:1},""); $("lb-x").focus();
 }
-$("visor").addEventListener("pointermove",e=>{ if($("visor").classList.contains("z")) origen(e); });
+function pintarLb(){ $("lb-img").src=actual.imgs[fotoIdx]||""; $("lb-img").alt=actual.nombre; $("lb").classList.remove("z"); $("lb-scroll").scrollTo(0,0); }
+function ocultarLb(){ if(!lbAbierto) return; lbAbierto=false; $("lb").hidden=true; }
+function cerrarLb(){ if(history.state&&history.state.lb) history.back(); else ocultarLb(); }
+$("visor").onclick=abrirLb;
+$("lb-x").onclick=cerrarLb;
+$("lb-prev").onclick=()=>mover(-1); $("lb-next").onclick=()=>mover(1);
+$("lb-img").onclick=()=>{
+  const z=$("lb").classList.toggle("z");
+  $("lb-hint").textContent=z?"Desliza para recorrer · toca para ver completa":"Toca la foto para acercar";
+};
+$("lb-scroll").onclick=e=>{ if(e.target===$("lb-scroll")) cerrarLb(); };
 function pintarTallas(){
   const sis=$("sistema").value, tabla=TABLAS[actual.genero]||T_NINOS, c=$("tallas");
   c.innerHTML="";
@@ -203,7 +212,7 @@ $("cerrar").onclick=cerrar;
 $("overlay").onclick=e=>{if(e.target===$("overlay"))cerrar()};
 document.addEventListener("keydown",e=>{
   if($("overlay").hidden) return;
-  if(e.key==="Escape") cerrar();
+  if(e.key==="Escape"){ lbAbierto?cerrarLb():cerrar(); return; }
   if(actual.imgs.length>1){ if(e.key==="ArrowLeft") mover(-1); if(e.key==="ArrowRight") mover(1); }
 });
 
