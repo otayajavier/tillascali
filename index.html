@@ -3,15 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Catálogo de calzado</title>
+<title>Wonder Cali · Calzado y ropa</title>
+<meta name="description" content="Catálogo de calzado y ropa de Wonder Cali">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 <header class="top">
-  <h1>Calzado</h1>
+  <h1>Wonder Cali</h1>
+  <nav id="categorias" aria-label="Filtrar por categoría" hidden></nav>
   <nav id="filtros" aria-label="Filtrar por género">
     <button data-g="todos" class="on">Todos</button>
     <button data-g="dama">Dama</button>
@@ -40,7 +42,11 @@
       <h2 id="o-nombre"></h2>
       <p id="o-precio" class="precio"></p>
 
-      <label class="campo">Medir por
+      <label class="campo" id="campo-uni" hidden>Tallas de
+        <select id="uni"><option value="dama">Dama</option><option value="caballero">Caballero</option></select>
+      </label>
+
+      <label class="campo" id="campo-sistema">Medir por
         <select id="sistema">
           <option value="CO">Colombia (CO)</option>
           <option value="EU">Europa (EU)</option>
@@ -73,6 +79,6 @@
   <p class="lb-hint" id="lb-hint">Toca la foto para acercar</p>
 </div>
 
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>
