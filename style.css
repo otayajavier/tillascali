@@ -4,9 +4,11 @@
 body{font-family:'Archivo',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.4}
 .top{position:sticky;top:0;z-index:5;background:var(--bg);padding:20px clamp(16px,4vw,48px) 12px;border-bottom:1px solid var(--line)}
 .top h1{font-size:clamp(2.4rem,8vw,5rem);font-weight:900;font-stretch:62%;letter-spacing:-.02em;line-height:.95}
-#filtros{display:flex;gap:8px;overflow-x:auto;margin-top:14px;padding-bottom:4px}
-#filtros button{font:inherit;font-weight:600;padding:8px 16px;border:1.5px solid var(--ink);border-radius:99px;background:none;color:var(--ink);cursor:pointer;white-space:nowrap}
-#filtros button.on{background:var(--ink);color:var(--bg)}
+#filtros,#categorias{display:flex;gap:8px;overflow-x:auto;margin-top:14px;padding-bottom:4px}
+#categorias{margin-top:12px}
+#categorias[hidden],.campo[hidden]{display:none}
+#filtros button,#categorias button{font:inherit;font-weight:600;padding:8px 16px;border:1.5px solid var(--ink);border-radius:99px;background:none;color:var(--ink);cursor:pointer;white-space:nowrap}
+#filtros button.on,#categorias button.on{background:var(--ink);color:var(--bg)}
 main{padding:24px clamp(16px,4vw,48px) 64px}
 .estado{color:var(--mut);padding:40px 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:20px}
@@ -65,3 +67,5 @@ select{font:inherit;padding:10px;border:1.5px solid var(--line);border-radius:6p
 
 .copiar{margin-top:auto;font:inherit;font-weight:600;padding:12px;border:1.5px solid var(--ink);border-radius:6px;background:none;color:var(--ink);cursor:pointer}
 .copiar+.pedir{margin-top:0}
+#categorias button{border-color:var(--acc);color:var(--acc)}
+#categorias button.on{background:var(--acc);color:var(--accink)}
