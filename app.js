@@ -47,6 +47,28 @@ const T_NINOS = [
 ];
 const TABLAS = {dama:T_DAMA, caballero:T_CABALLERO, niño:T_NINOS, niña:T_NINOS};
 
+/* Ropa. Jeans: números (dama 6-16, caballero 28-38). Si tienes tallas impares, agrégalas aquí. */
+const num = arr => arr.map(n=>({Talla:n}));
+const JEANS = { dama:num([6,8,10,12,14,16]), caballero:num([28,30,32,34,36,38]) };
+const LETRAS = num(["S","M","L","XL","XXL"]);   // camisetas, sudaderas, buzos y todo lo demás
+const SIS_CALZADO = ["CO","EU","USA","CM"];
+
+// Tipo de producto según la columna "categoria" (vacía = calzado)
+function tipoDe(p){
+  const c=norm(p.categoria);
+  if(!c||/calzad|zapat|tenis/.test(c)) return "calzado";
+  if(/jean/.test(c)) return "jeans";
+  return "ropa";
+}
+// Género efectivo: en productos unisex el cliente elige la tabla de dama o caballero
+let uniSel="dama";
+function tablaActual(){
+  const t=tipoDe(actual), g=actual.genero==="unisex"?uniSel:actual.genero;
+  if(t==="calzado") return {sis:SIS_CALZADO, filas:TABLAS[g]||T_NINOS};
+  if(t==="jeans"&&JEANS[g]) return {sis:["Talla"], filas:JEANS[g]};
+  return {sis:["Talla"], filas:LETRAS};
+}
+
 /* ====== UTILIDADES ====== */
 const $ = id => document.getElementById(id);
 const norm = s => (s||"").toString().trim().toLowerCase();
@@ -75,7 +97,7 @@ function parseCSV(t){
 }
 
 /* ====== DATOS ====== */
-let productos=[], filtro="todos";
+let productos=[], filtro="todos", catFiltro="todas";
 
 async function cargar(){
   try{
@@ -88,7 +110,7 @@ async function cargar(){
       id:r[ix("id")], nombre:r[ix("nombre")]?.trim(),
       imgs:(r[ix("imagen_url")]||"").split(/[\s,|;]+/).filter(u=>/^https?:/.test(u)).map(imgUrl),
       precio:parseFloat((r[ix("precio")]||"").replace(/[^\d.]/g,"")),
-      genero:norm(r[ix("genero")]),
+      genero:norm(r[ix("genero")]), categoria:(r[ix("categoria")]||"").trim(),
       disp:norm(r[ix("disponible")])
     })).filter(p=>p.nombre && ["si","sí"].includes(p.disp));
     productos.forEach(p=>p.img=p.imgs[0]||"");
@@ -98,6 +120,7 @@ async function cargar(){
       [productos[i],productos[k]]=[productos[k],productos[i]];
     }
     $("estado").hidden = true;
+    pintarCategorias();
     pintar();
     abrirDesdeHash();
   }catch(e){
@@ -115,10 +138,27 @@ function abrirDesdeHash(){
     $("estado").hidden=false; $("estado").textContent="Ese zapato ya no está disponible. Mira el resto del catálogo 👇";
   }
 }
+// Botones de categoría generados con lo que haya en la hoja
+function pintarCategorias(){
+  const nav=$("categorias"), vistos=new Map();
+  productos.forEach(p=>{
+    const k=tipoDe(p)==="calzado"?"calzado":norm(p.categoria);
+    if(!vistos.has(k)) vistos.set(k,k.charAt(0).toUpperCase()+k.slice(1));
+  });
+  nav.innerHTML="";
+  if(vistos.size<2){ nav.hidden=true; return; }
+  nav.hidden=false;
+  [["todas","Todo"],...vistos].forEach(([k,l])=>{
+    const b=document.createElement("button"); b.dataset.c=k; b.textContent=l;
+    b.classList.toggle("on",k===catFiltro); nav.appendChild(b);
+  });
+}
 function pintar(){
-  const lista = productos.filter(p=>filtro=="todos"||p.genero==filtro);
+  const lista = productos.filter(p=>
+    (catFiltro=="todas"||norm(p.categoria)==catFiltro||(catFiltro=="calzado"&&tipoDe(p)=="calzado")) &&
+    (filtro=="todos"||p.genero==filtro||(p.genero=="unisex"&&(filtro=="dama"||filtro=="caballero"))));
   const g=$("grid"); g.innerHTML="";
-  if(!lista.length){ $("estado").hidden=false; $("estado").textContent="No hay calzado disponible en esta categoría."; return; }
+  if(!lista.length){ $("estado").hidden=false; $("estado").textContent="No hay productos disponibles en esta categoría."; return; }
   $("estado").hidden=true;
   lista.forEach(p=>{
     const b=document.createElement("button"); b.className="card";
@@ -131,6 +171,12 @@ function pintar(){
   });
 }
 
+$("categorias").onclick=e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  catFiltro=b.dataset.c;
+  document.querySelectorAll("#categorias button").forEach(x=>x.classList.toggle("on",x===b));
+  pintar();
+};
 $("filtros").onclick=e=>{
   const b=e.target.closest("button"); if(!b) return;
   filtro=b.dataset.g;
@@ -143,7 +189,7 @@ let actual=null, tallaSel=null, ultimoFoco=null, fotoIdx=0, abierto=false;
 
 function enlace(p){ return location.origin+location.pathname+location.search+(p.id?"#p="+encodeURIComponent(p.id):""); }
 function abrir(p, desdeURL){
-  actual=p; tallaSel=null; ultimoFoco=document.activeElement;
+  actual=p; tallaSel=null; uniSel="dama"; $("uni").value="dama"; ultimoFoco=document.activeElement;
   $("o-img").referrerPolicy="no-referrer"; fotoIdx=0; pintarFoto();
   $("o-nombre").textContent=p.nombre;
   $("o-precio").textContent=isNaN(p.precio)?"":precioFmt(p.precio);
@@ -215,9 +261,12 @@ $("lb-img").onclick=()=>{
 };
 $("lb-scroll").onclick=e=>{ if(e.target===$("lb-scroll")) cerrarLb(); };
 function pintarTallas(){
-  const sis=$("sistema").value, tabla=TABLAS[actual.genero]||T_NINOS, c=$("tallas");
+  const t=tablaActual(), multi=t.sis.length>1, c=$("tallas");
+  const sis=multi?$("sistema").value:"Talla";
+  $("campo-sistema").hidden=!multi;
+  $("campo-uni").hidden=!(actual.genero==="unisex"&&(tipoDe(actual)==="calzado"||tipoDe(actual)==="jeans"));
   c.innerHTML="";
-  tabla.forEach((fila,i)=>{
+  t.filas.forEach((fila,i)=>{
     const b=document.createElement("button");
     b.textContent=fila[sis]; b.setAttribute("aria-pressed",i===tallaSel);
     b.classList.toggle("on",i===tallaSel);
@@ -226,20 +275,23 @@ function pintarTallas(){
   });
 }
 function mostrarEquiv(){
-  const fila=(TABLAS[actual.genero]||T_NINOS)[tallaSel];
-  ["CO","EU","USA","CM"].forEach(k=>$("e-"+k).textContent=fila[k]);
+  const t=tablaActual(); if(t.sis.length<2){ $("equiv").hidden=true; return; }
+  const fila=t.filas[tallaSel];
+  SIS_CALZADO.forEach(k=>$("e-"+k).textContent=fila[k]);
   $("equiv").hidden=false;
 }
 function actualizarPedir(){
   const a=$("pedir");
   if(tallaSel===null){ a.setAttribute("aria-disabled","true"); a.textContent="Elige una talla para pedir"; a.removeAttribute("href"); return; }
-  const f=(TABLAS[actual.genero]||T_NINOS)[tallaSel];
-  const msg=`Hola, quiero pedir: ${actual.nombre} (ref. ${actual.id}), talla CO ${f.CO} / EU ${f.EU} / USA ${f.USA} / ${f.CM} cm.\n${enlace(actual)}`;
+  const t=tablaActual(), f=t.filas[tallaSel];
+  const talla=t.sis.length>1?`talla CO ${f.CO} / EU ${f.EU} / USA ${f.USA} / ${f.CM} cm`:`talla ${f.Talla}`;
+  const msg=`Hola, quiero pedir: ${actual.nombre} (ref. ${actual.id}), ${talla}.\n${enlace(actual)}`;
   a.href=`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
   a.setAttribute("aria-disabled","false"); a.textContent="Pedir por WhatsApp";
 }
 
 $("sistema").onchange=()=>{pintarTallas()};
+$("uni").onchange=()=>{uniSel=$("uni").value; tallaSel=null; $("equiv").hidden=true; pintarTallas(); actualizarPedir();};
 $("cerrar").onclick=cerrar;
 $("overlay").onclick=e=>{if(e.target===$("overlay"))cerrar()};
 document.addEventListener("keydown",e=>{
