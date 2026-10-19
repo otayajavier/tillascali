@@ -55,7 +55,7 @@ const SIS_CALZADO = ["CO","EU","USA","CM"];
 
 // Tipo de producto según la columna "categoria" (vacía = calzado)
 function tipoDe(p){
-  const c=norm(p.categoria);
+  const c=clave(p.categoria);
   if(!c||/calzad|zapat|tenis/.test(c)) return "calzado";
   if(/jean/.test(c)) return "jeans";
   return "ropa";
@@ -71,6 +71,8 @@ function tablaActual(){
 
 /* ====== UTILIDADES ====== */
 const $ = id => document.getElementById(id);
+// Sin tildes ni mayúsculas: para títulos de columnas y categorías
+const clave = s => (s||"").toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase();
 const norm = s => (s||"").toString().trim().toLowerCase();
 const precioFmt = n => new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(n);
 
@@ -104,13 +106,15 @@ async function cargar(){
     const res = await fetch(CSV_URL+(CSV_URL.includes("?")?"&":"?")+"t="+Date.now());
     if(!res.ok) throw new Error(res.status);
     const rows = parseCSV(await res.text());
-    const head = rows.shift().map(norm);
+    const head = rows.shift().map(clave);
     const ix = k => head.indexOf(k);
+    const ic = [ix("categoria"),ix("category"),ix("tipo")].find(i=>i>=0) ?? -1;
+    if(ic<0) console.warn("No se encontró la columna 'categoria'. Columnas leídas:",head);
     productos = rows.map(r=>({
       id:r[ix("id")], nombre:r[ix("nombre")]?.trim(),
       imgs:(r[ix("imagen_url")]||"").split(/[\s,|;]+/).filter(u=>/^https?:/.test(u)).map(imgUrl),
       precio:parseFloat((r[ix("precio")]||"").replace(/[^\d.]/g,"")),
-      genero:norm(r[ix("genero")]), categoria:(r[ix("categoria")]||"").trim(),
+      genero:norm(r[ix("genero")]), categoria:(r[ic]||"").trim(),
       disp:norm(r[ix("disponible")])
     })).filter(p=>p.nombre && ["si","sí"].includes(p.disp));
     productos.forEach(p=>p.img=p.imgs[0]||"");
@@ -142,8 +146,9 @@ function abrirDesdeHash(){
 function pintarCategorias(){
   const nav=$("categorias"), vistos=new Map();
   productos.forEach(p=>{
-    const k=tipoDe(p)==="calzado"?"calzado":norm(p.categoria);
-    if(!vistos.has(k)) vistos.set(k,k.charAt(0).toUpperCase()+k.slice(1));
+    const k=tipoDe(p)==="calzado"?"calzado":clave(p.categoria);
+    const raw=tipoDe(p)==="calzado"?"Calzado":p.categoria;
+    if(!vistos.has(k)) vistos.set(k,raw.charAt(0).toUpperCase()+raw.slice(1));
   });
   nav.innerHTML="";
   if(vistos.size<2){ nav.hidden=true; return; }
@@ -155,7 +160,7 @@ function pintarCategorias(){
 }
 function pintar(){
   const lista = productos.filter(p=>
-    (catFiltro=="todas"||norm(p.categoria)==catFiltro||(catFiltro=="calzado"&&tipoDe(p)=="calzado")) &&
+    (catFiltro=="todas"||clave(p.categoria)==catFiltro||(catFiltro=="calzado"&&tipoDe(p)=="calzado")) &&
     (filtro=="todos"||p.genero==filtro||(p.genero=="unisex"&&(filtro=="dama"||filtro=="caballero"))));
   const g=$("grid"); g.innerHTML="";
   if(!lista.length){ $("estado").hidden=false; $("estado").textContent="No hay productos disponibles en esta categoría."; return; }
