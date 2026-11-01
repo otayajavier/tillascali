@@ -118,3 +118,8 @@ s.ant{font-family:'Archivo',system-ui,sans-serif;font-size:.55em;font-weight:500
 [hidden]{display:none!important}
 
 @media(max-width:720px){.info{padding:18px 22px 28px;gap:12px}}
+
+/* Detalle del producto: nunca cortar la parte de arriba y no recargar al tirar hacia abajo */
+.overlay{display:flex;align-items:flex-start;justify-content:center;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.panel{margin:auto}
+.lb,.lb-scroll{overscroll-behavior:contain}
