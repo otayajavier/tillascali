@@ -116,3 +116,5 @@ s.ant{font-family:'Archivo',system-ui,sans-serif;font-size:.55em;font-weight:500
 
 /* Que el atributo hidden siempre oculte, aunque el elemento tenga display propio */
 [hidden]{display:none!important}
+
+@media(max-width:720px){.info{padding:18px 22px 28px;gap:12px}}

@@ -116,6 +116,8 @@ const $ = id => document.getElementById(id);
 // Sin tildes ni mayúsculas: para títulos de columnas y categorías
 const clave = s => (s||"").toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase();
 const norm = s => (s||"").toString().trim().toLowerCase();
+// Pesos enteros: se leen solo los dígitos, venga como "130000", "130.000", "130,000" o "$ 130.000"
+const dinero = s => { const d=String(s||"").replace(/\D/g,""); return d?parseInt(d,10):NaN; };
 const precioFmt = n => new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(n);
 
 // Convierte enlaces de Drive a imagen directa; el resto se deja igual
@@ -156,9 +158,9 @@ async function cargar(){
     productos = rows.map(r=>({
       id:r[ix("id")], nombre:r[ix("nombre")]?.trim(),
       imgs:(r[ix("imagen_url")]||"").split(/[\s,|;]+/).filter(u=>/^https?:/.test(u)).map(imgUrl),
-      precio:parseFloat((r[ix("precio")]||"").replace(/[^\d.]/g,"")),
+      precio:dinero(r[ix("precio")]),
       genero:norm(r[ix("genero")]), categoria:(r[ic]||"").trim(),
-      precioAnt:parseFloat((col(r,"precio_anterior")).replace(/[^\d.]/g,"")),
+      precioAnt:dinero(col(r,"precio_anterior")),
       descripcion:col(r,"descripcion").trim(),
       tallas:listaTallas(col(r,"tallas")),
       nuevo:norm(col(r,"nuevo")), fecha:parseFecha(col(r,"fecha")),
