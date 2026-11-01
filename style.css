@@ -1,5 +1,4 @@
-:root{--bg:#f1f2f4;--ink:#16181d;--mut:#6b7079;--line:#d9dbe0;--surf:#fff;--acc:#2447f5;--accink:#fff}
-@media (prefers-color-scheme:dark){:root{--bg:#14161a;--ink:#f1f2f4;--mut:#9aa0aa;--line:#2b2e35;--surf:#1d2025;--acc:#6f8cff;--accink:#0d1020}}
+:root{--bg:#fff;--ink:#0a0a0a;--mut:#555;--line:#d6d6d6;--surf:#fff;--acc:#c6f135;--accink:#0a0a0a;--gris:#ededed}
 *{box-sizing:border-box;margin:0}
 body{font-family:'Archivo',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.4}
 .top{position:sticky;top:0;z-index:5;background:var(--bg);padding:20px clamp(16px,4vw,48px) 12px;border-bottom:1px solid var(--line)}
@@ -69,3 +68,39 @@ select{font:inherit;padding:10px;border:1.5px solid var(--line);border-radius:6p
 .copiar+.pedir{margin-top:0}
 #categorias button{border-color:var(--acc);color:var(--acc)}
 #categorias button.on{background:var(--acc);color:var(--accink)}
+
+/* ===== Diseño A · Streetwear ===== */
+.promo{background:#0a0a0a;color:#c6f135;font-size:.75rem;font-weight:800;letter-spacing:.12em;text-align:center;padding:10px 16px;text-transform:uppercase}
+.promo[hidden]{display:none}
+.top{padding:16px clamp(16px,4vw,48px) 0;border-bottom:2px solid var(--ink)}
+.top h1{font-family:'Anton',Impact,sans-serif;font-weight:400;font-stretch:100%;font-size:clamp(2.6rem,9vw,4.5rem);line-height:.95;letter-spacing:.01em;text-transform:uppercase}
+#filtros,#categorias{margin-top:12px;padding-bottom:6px}
+#filtros button,#categorias button{border:2px solid var(--ink);color:var(--ink);font-weight:800;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;padding:10px 16px;min-height:44px}
+#filtros button.on,#categorias button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+#categorias button{border-color:var(--ink);color:var(--ink)}
+#filtros{gap:18px;margin-top:6px;padding:8px 0 12px}
+#filtros button{border:0;border-radius:0;padding:8px 0;min-height:44px;color:var(--mut);font-weight:700;text-transform:none;letter-spacing:0;font-size:.9rem}
+#filtros button.on{background:none;color:var(--ink);box-shadow:inset 0 -3px 0 #c6f135}
+.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 12px}
+@media(min-width:720px){.grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:28px 18px}}
+.card .img{border-radius:0;background:var(--gris)}
+.card h3{font-size:.85rem;font-weight:800;text-transform:uppercase;line-height:1.15}
+.card .p{font-family:'Anton',Impact,sans-serif;font-size:1.5rem;color:var(--ink);line-height:1;font-weight:400}
+.promo+.top{border-top:0}
+/* Overlay */
+.panel{border-radius:0}
+.info h2{font-weight:800;text-transform:uppercase}
+.precio{font-family:'Anton',Impact,sans-serif;font-size:2rem;font-weight:400}
+.tallas button{border:2px solid var(--ink);border-radius:0;min-height:44px}
+.tallas button.on{background:#c6f135;color:#0a0a0a;border-color:var(--ink)}
+.equiv{border-radius:0}
+.pedir{border-radius:0;background:#0a0a0a;color:#c6f135;font-weight:800;letter-spacing:.06em;text-transform:uppercase;min-height:52px;display:flex;align-items:center;justify-content:center}
+.pedir[aria-disabled=true]{background:#e4e4e4;color:#555}
+.copiar{border-radius:0;border-width:2px}
+.cerrar{background:#0a0a0a;color:#c6f135}
+select{border-radius:0;border:2px solid var(--ink)}
+/* Botón flotante de WhatsApp */
+.wa{position:fixed;left:16px;right:16px;bottom:16px;z-index:10;display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;background:#0a0a0a;color:#c6f135;text-decoration:none;font-weight:800;font-size:.95rem;letter-spacing:.08em;text-transform:uppercase;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.wa[hidden]{display:none}
+@media(min-width:720px){.wa{left:auto;right:24px;width:auto;padding:0 24px}}
+main{padding-bottom:110px}

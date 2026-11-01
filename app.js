@@ -3,6 +3,8 @@
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTVtjb1UiiDrZ65ulxoDgvfZkUuwrvqd31Odvm4I_pbovEyutJLgK1Goo1xASgpD9Yq8U0fpFS3sJ8R/pub?output=csv";
 // Número con código de país, sin + ni espacios (Colombia = 57)
 const WHATSAPP = "573176670197";
+// Mensaje corto sobre el título (ej. "Envíos en Cali · Paga al recibir"). Déjalo vacío para ocultarlo.
+const PROMO = "";
 
 /* ====== TABLAS DE TALLAS ======
    Dama y caballero: tabla real. T_NINOS: valores aproximados, reemplazar.
@@ -306,3 +308,8 @@ document.addEventListener("keydown",e=>{
 });
 
 cargar();
+
+/* Barra de promo y botón flotante de WhatsApp */
+if(PROMO){ $("promo").textContent=PROMO; $("promo").hidden=false; }
+$("wa").href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent("Hola Wonder Cali, quiero información de sus productos.");
+$("wa").hidden=false;
