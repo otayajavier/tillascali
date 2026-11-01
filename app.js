@@ -2,7 +2,7 @@
 // Google Sheets > Archivo > Compartir > Publicar en la web > hoja de inventario > CSV > copiar enlace
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1jtXGDbagcr3lWsgTRUYWsMQPB95WwNLnOFO4x2Sj_MccyrKSqZxGv2bZSVd3Ke9o_fk6MJvni-Nl/pub?output=csv";
 // Número con código de país, sin + ni espacios (Colombia = 57)
-const WHATSAPP = "573176670197";
+const WHATSAPP = "573165641488";
 // Mensaje corto sobre el título (ej. "Envíos en Cali · Paga al recibir"). Déjalo vacío para ocultarlo.
 const PROMO = "";
 // Etiqueta NUEVO automática: días desde la fecha de creación (si la columna "nuevo" está vacía)
