@@ -1,10 +1,12 @@
 /* ====== CONFIGURACIÓN ====== */
 // Google Sheets > Archivo > Compartir > Publicar en la web > hoja de inventario > CSV > copiar enlace
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTVtjb1UiiDrZ65ulxoDgvfZkUuwrvqd31Odvm4I_pbovEyutJLgK1Goo1xASgpD9Yq8U0fpFS3sJ8R/pub?output=csv";
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1jtXGDbagcr3lWsgTRUYWsMQPB95WwNLnOFO4x2Sj_MccyrKSqZxGv2bZSVd3Ke9o_fk6MJvni-Nl/pub?output=csv";
 // Número con código de país, sin + ni espacios (Colombia = 57)
 const WHATSAPP = "573176670197";
 // Mensaje corto sobre el título (ej. "Envíos en Cali · Paga al recibir"). Déjalo vacío para ocultarlo.
 const PROMO = "";
+// Etiqueta NUEVO automática: días desde la fecha de creación (si la columna "nuevo" está vacía)
+const DIAS_NUEVO = 14;
 
 /* ====== TABLAS DE TALLAS ======
    Dama y caballero: tabla real. T_NINOS: valores aproximados, reemplazar.
@@ -65,10 +67,48 @@ function tipoDe(p){
 // Género efectivo: en productos unisex el cliente elige la tabla de dama o caballero
 let uniSel="dama";
 function tablaActual(){
-  const t=tipoDe(actual), g=actual.genero==="unisex"?uniSel:actual.genero;
-  if(t==="calzado") return {sis:SIS_CALZADO, filas:TABLAS[g]||T_NINOS};
+  const t=tipoDe(actual), g=actual.genero==="unisex"?uniSel:actual.genero, lista=actual.tallas||[];
+  if(t==="calzado"){
+    let filas=TABLAS[g]||T_NINOS;
+    if(lista.length){ const f=filas.filter(x=>lista.includes(String(x.CO))); if(f.length) filas=f; }
+    return {sis:SIS_CALZADO, filas};
+  }
+  // Ropa y jeans: si el producto trae sus tallas (columna "tallas"), se muestran tal cual
+  if(lista.length) return {sis:["Talla"], filas:lista.map(n=>({Talla:n}))};
   if(t==="jeans"&&JEANS[g]) return {sis:["Talla"], filas:JEANS[g]};
   return {sis:["Talla"], filas:LETRAS};
+}
+// "37, 38.5 m" -> ["37","38.5","M"]
+function listaTallas(txt){
+  const out=[];
+  String(txt||"").split(/[\s,;|]+/).forEach(t=>{
+    t=t.trim(); if(!t) return;
+    t=/^\d+([.,]\d+)?$/.test(t)?String(parseFloat(t.replace(",","."))):t.toUpperCase();
+    if(!out.includes(t)) out.push(t);
+  });
+  return out;
+}
+// Fechas "2026-11-01 12:30" o "01/11/2026 12:30"
+function parseFecha(s){
+  s=(s||"").trim(); if(!s) return null;
+  let m=s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}):(\d{2}))?/);
+  if(m) return new Date(+m[1],m[2]-1,+m[3],+(m[4]||0),+(m[5]||0));
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/);
+  if(m) return new Date(+m[3],m[2]-1,+m[1],+(m[4]||0),+(m[5]||0));
+  return null;
+}
+// "si" = siempre, "no" = nunca, vacío = automático según la fecha
+function esNuevo(p){
+  if(p.nuevo==="si"||p.nuevo==="sí") return true;
+  if(p.nuevo==="no") return false;
+  return !!p.fecha && (Date.now()-p.fecha.getTime())/864e5 <= DIAS_NUEVO;
+}
+// Precio actual y, si hay oferta, el anterior tachado
+function pintarPrecio(el,p){
+  el.textContent="";
+  if(isNaN(p.precio)) return;
+  if(p.precioAnt>p.precio){ const s=document.createElement("s"); s.className="ant"; s.textContent=precioFmt(p.precioAnt); el.appendChild(s); }
+  el.appendChild(document.createTextNode(precioFmt(p.precio)));
 }
 
 /* ====== UTILIDADES ====== */
@@ -101,7 +141,7 @@ function parseCSV(t){
 }
 
 /* ====== DATOS ====== */
-let productos=[], filtro="todos", catFiltro="todas";
+let productos=[], filtro="todos", catFiltro="todas", pintarCategoriasOrden=[];
 
 async function cargar(){
   try{
@@ -110,6 +150,7 @@ async function cargar(){
     const rows = parseCSV(await res.text());
     const head = rows.shift().map(clave);
     const ix = k => head.indexOf(k);
+    const col = (r,k)=>{ const i=ix(k); return i>=0?(r[i]||""):""; };
     const ic = [ix("categoria"),ix("category"),ix("tipo")].find(i=>i>=0) ?? -1;
     if(ic<0) console.warn("No se encontró la columna 'categoria'. Columnas leídas:",head);
     productos = rows.map(r=>({
@@ -117,9 +158,14 @@ async function cargar(){
       imgs:(r[ix("imagen_url")]||"").split(/[\s,|;]+/).filter(u=>/^https?:/.test(u)).map(imgUrl),
       precio:parseFloat((r[ix("precio")]||"").replace(/[^\d.]/g,"")),
       genero:norm(r[ix("genero")]), categoria:(r[ic]||"").trim(),
+      precioAnt:parseFloat((col(r,"precio_anterior")).replace(/[^\d.]/g,"")),
+      descripcion:col(r,"descripcion").trim(),
+      tallas:listaTallas(col(r,"tallas")),
+      nuevo:norm(col(r,"nuevo")), fecha:parseFecha(col(r,"fecha")),
       disp:norm(r[ix("disponible")])
     })).filter(p=>p.nombre && ["si","sí"].includes(p.disp));
     productos.forEach(p=>p.img=p.imgs[0]||"");
+    pintarCategoriasOrden=productos.slice(); // orden de la hoja, antes de mezclar
     // Orden aleatorio en cada carga (Fisher-Yates); los filtros conservan ese orden
     for(let i=productos.length-1;i>0;i--){
       const k=Math.floor(Math.random()*(i+1));
@@ -141,18 +187,20 @@ function abrirDesdeHash(){
   if(p) abrir(p,true);
   else{
     history.replaceState(null,"",location.pathname+location.search);
-    $("estado").hidden=false; $("estado").textContent="Ese zapato ya no está disponible. Mira el resto del catálogo 👇";
+    $("estado").hidden=false; $("estado").textContent="Ese producto ya no está disponible. Mira el resto del catálogo 👇";
   }
 }
 // Botones de categoría generados con lo que haya en la hoja
 function pintarCategorias(){
   const nav=$("categorias"), vistos=new Map();
-  productos.forEach(p=>{
+  vistos.set("calzado","Calzado");
+  pintarCategoriasOrden.forEach(p=>{
     const k=tipoDe(p)==="calzado"?"calzado":clave(p.categoria);
     const raw=tipoDe(p)==="calzado"?"Calzado":p.categoria;
     if(!vistos.has(k)) vistos.set(k,raw.charAt(0).toUpperCase()+raw.slice(1));
   });
   nav.innerHTML="";
+  if(!pintarCategoriasOrden.some(p=>tipoDe(p)==="calzado")) vistos.delete("calzado");
   if(vistos.size<2){ nav.hidden=true; return; }
   nav.hidden=false;
   [["todas","Todo"],...vistos].forEach(([k,l])=>{
@@ -171,8 +219,9 @@ function pintar(){
     const b=document.createElement("button"); b.className="card";
     b.innerHTML=`<div class="img"><img loading="lazy" referrerpolicy="no-referrer" alt=""></div><h3></h3><span class="p"></span>`;
     b.querySelector("img").src=p.img; b.querySelector("img").alt=p.nombre;
+    if(esNuevo(p)){ const e=document.createElement("span"); e.className="etq-nuevo"; e.textContent="NUEVO"; b.querySelector(".img").appendChild(e); }
     b.querySelector("h3").textContent=p.nombre;
-    b.querySelector(".p").textContent=isNaN(p.precio)?"":precioFmt(p.precio);
+    pintarPrecio(b.querySelector(".p"),p);
     b.onclick=()=>abrir(p);
     g.appendChild(b);
   });
@@ -199,7 +248,9 @@ function abrir(p, desdeURL){
   actual=p; tallaSel=null; uniSel="dama"; $("uni").value="dama"; ultimoFoco=document.activeElement;
   $("o-img").referrerPolicy="no-referrer"; fotoIdx=0; pintarFoto();
   $("o-nombre").textContent=p.nombre;
-  $("o-precio").textContent=isNaN(p.precio)?"":precioFmt(p.precio);
+  pintarPrecio($("o-precio"),p);
+  $("o-desc").textContent=p.descripcion||""; $("o-desc").hidden=!p.descripcion;
+  $("o-nuevo").hidden=!esNuevo(p);
   $("equiv").hidden=true;
   pintarTallas();
   actualizarPedir();
@@ -209,7 +260,7 @@ function abrir(p, desdeURL){
   const h=p.id?"#p="+encodeURIComponent(p.id):location.hash;
   if(desdeURL) history.replaceState({o:1,base:1},"",location.pathname+location.search+h);
   else history.pushState({o:1},"",location.pathname+location.search+h);
-  $("copiar").textContent="🔗 Copiar enlace de este zapato";
+  $("copiar").textContent="🔗 Copiar enlace de este producto";
   $("cerrar").focus();
 }
 function ocultar(){
@@ -228,7 +279,7 @@ $("copiar").onclick=async()=>{
   const url=enlace(actual), b=$("copiar");
   try{ await navigator.clipboard.writeText(url); }
   catch(_){ const t=document.createElement("textarea"); t.value=url; document.body.appendChild(t); t.select(); try{document.execCommand("copy")}catch(e){prompt("Copia este enlace:",url)} t.remove(); }
-  b.textContent="✓ ¡Enlace copiado!"; setTimeout(()=>b.textContent="🔗 Copiar enlace de este zapato",2000);
+  b.textContent="✓ ¡Enlace copiado!"; setTimeout(()=>b.textContent="🔗 Copiar enlace de este producto",2000);
 };
 window.addEventListener("popstate",()=>{ if(lbAbierto) ocultarLb(); else ocultar(); });
 
@@ -271,7 +322,7 @@ function pintarTallas(){
   const t=tablaActual(), multi=t.sis.length>1, c=$("tallas");
   const sis=multi?$("sistema").value:"Talla";
   $("campo-sistema").hidden=!multi;
-  $("campo-uni").hidden=!(actual.genero==="unisex"&&(tipoDe(actual)==="calzado"||tipoDe(actual)==="jeans"));
+  $("campo-uni").hidden=!(actual.genero==="unisex"&&(tipoDe(actual)==="calzado"||(tipoDe(actual)==="jeans"&&!(actual.tallas||[]).length)));
   c.innerHTML="";
   t.filas.forEach((fila,i)=>{
     const b=document.createElement("button");

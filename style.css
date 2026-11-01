@@ -104,3 +104,15 @@ select{border-radius:0;border:2px solid var(--ink)}
 .wa[hidden]{display:none}
 @media(min-width:720px){.wa{left:auto;right:24px;width:auto;padding:0 24px}}
 main{padding-bottom:110px}
+
+/* ===== NUEVO, oferta y descripción ===== */
+.card .img{position:relative}
+.etq-nuevo{position:absolute;top:8px;left:8px;background:#c6f135;color:#0a0a0a;font-weight:800;font-size:.7rem;letter-spacing:.08em;padding:4px 8px}
+.etq-fija{position:static;align-self:flex-start;display:inline-block}
+.etq-fija[hidden]{display:none}
+s.ant{font-family:'Archivo',system-ui,sans-serif;font-size:.55em;font-weight:500;color:#6b6b6b;margin-right:8px}
+.desc{margin:0;color:var(--mut);font-size:.95rem}
+.desc[hidden]{display:none}
+
+/* Que el atributo hidden siempre oculte, aunque el elemento tenga display propio */
+[hidden]{display:none!important}

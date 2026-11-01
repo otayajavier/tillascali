@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 <div id="promo" class="promo" hidden></div>
@@ -40,8 +40,10 @@
       <div id="thumbs" class="thumbs"></div>
     </div>
     <div class="info">
+      <span id="o-nuevo" class="etq-nuevo etq-fija" hidden>NUEVO</span>
       <h2 id="o-nombre"></h2>
       <p id="o-precio" class="precio"></p>
+      <p id="o-desc" class="desc" hidden></p>
 
       <label class="campo" id="campo-uni" hidden>Tallas de
         <select id="uni"><option value="dama">Dama</option><option value="caballero">Caballero</option></select>
@@ -66,7 +68,7 @@
         <div><span>CM</span><b id="e-CM"></b></div>
       </div>
 
-      <button id="copiar" class="copiar" type="button">🔗 Copiar enlace de este zapato</button>
+      <button id="copiar" class="copiar" type="button">🔗 Copiar enlace de este producto</button>
       <a id="pedir" class="pedir" target="_blank" rel="noopener" aria-disabled="true">Elige una talla para pedir</a>
     </div>
   </div>
@@ -85,6 +87,6 @@
   Pedir por WhatsApp
 </a>
 
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>
