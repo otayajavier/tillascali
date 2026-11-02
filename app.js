@@ -62,6 +62,7 @@ function tipoDe(p){
   const c=clave(p.categoria);
   if(!c||/calzad|zapat|tenis/.test(c)) return "calzado";
   if(/jean/.test(c)) return "jeans";
+  if(/gorra|reloj/.test(c)) return "unico";   // sin selector de talla (salvo que traigan "tallas")
   return "ropa";
 }
 // Género efectivo: en productos unisex el cliente elige la tabla de dama o caballero
@@ -320,7 +321,11 @@ $("lb-img").onclick=()=>{
   $("lb-hint").textContent=z?"Desliza para recorrer · toca para ver completa":"Toca la foto para acercar";
 };
 $("lb-scroll").onclick=e=>{ if(e.target===$("lb-scroll")) cerrarLb(); };
+function sinTalla(p){ return tipoDe(p)==="unico"&&!(p.tallas||[]).length; }
 function pintarTallas(){
+  const ocultar=sinTalla(actual);
+  ["campo-sistema","lbl-talla","tallas"].forEach(id=>{ const e=$(id); if(e) e.hidden=ocultar; });
+  if(ocultar){ $("campo-uni").hidden=true; $("tallas").innerHTML=""; return; }
   const t=tablaActual(), multi=t.sis.length>1, c=$("tallas");
   const sis=multi?$("sistema").value:"Talla";
   $("campo-sistema").hidden=!multi;
@@ -342,6 +347,11 @@ function mostrarEquiv(){
 }
 function actualizarPedir(){
   const a=$("pedir");
+  if(sinTalla(actual)){
+    const msg=`Hola, quiero pedir: ${actual.nombre} (ref. ${actual.id}).\n${enlace(actual)}`;
+    a.href=`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+    a.setAttribute("aria-disabled","false"); a.textContent="Pedir por WhatsApp"; return;
+  }
   if(tallaSel===null){ a.setAttribute("aria-disabled","true"); a.textContent="Elige una talla para pedir"; a.removeAttribute("href"); return; }
   const t=tablaActual(), f=t.filas[tallaSel];
   const talla=t.sis.length>1?`talla CO ${f.CO} / EU ${f.EU} / USA ${f.USA} / ${f.CM} cm`:`talla ${f.Talla}`;

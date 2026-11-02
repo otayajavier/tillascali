@@ -140,7 +140,7 @@
         <label for="tallas">Tallas disponibles</label>
         <div class="chips" id="chips" aria-label="Tallas sugeridas"></div>
         <input id="tallas" placeholder="Ej. 37,38,39 o M,L,XL" style="margin-top:8px">
-        <div class="hint">Si no marcas ninguna se muestran todas. Medias tallas con punto: 37.5</div>
+        <div class="hint">Si no marcas ninguna se muestran todas. Medias tallas con punto: 37.5. Gorras y relojes: déjalo vacío (sin talla).</div>
 
         <label for="imagenes">Fotos</label>
         <div class="zona" id="zona">
@@ -248,7 +248,7 @@ $("salir").onclick = function () { borrarLocal("wc_clave"); location.reload(); }
 /* ====== LISTA ====== */
 function iniciarFormulario(op) {
   var G = (op && op.generos) || ["dama", "caballero", "unisex", "niño", "niña"];
-  var C = (op && op.categorias) || ["calzado", "jeans", "camisetas", "sudaderas", "buzos"];
+  var C = (op && op.categorias) || ["calzado", "jeans", "camisetas", "sudaderas", "buzos", "gorras", "relojes"];
   G.forEach(function (g) { $("genero").add(new Option(bonito(g), g)); $("fGenero").add(new Option(bonito(g), g)); });
   C.forEach(asegurarCategoria);
   $("categoria").value = ""; $("genero").value = "";
@@ -367,6 +367,7 @@ function opcionesTallas(cat, gen) {
     if (gen === "unisex") return rango(6, 16, 2).concat(rango(28, 38, 2));
     return [];
   }
+  if (c === "gorras" || c === "relojes") return [];
   return ["S", "M", "L", "XL", "XXL"];
 }
 function pintarChips() {
